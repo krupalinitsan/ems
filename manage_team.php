@@ -1,25 +1,30 @@
 <?php
-
+include ('header.php');
 require ("db.php");
 $msg = "";
-$id = $_GET['id'];
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
 if (isset($_POST['edit'])) {
+    // Validate and sanitize user input
+    $tname = mysqli_real_escape_string($conn, $_POST['tname']);
 
-    //fetch $_post values 
-    $tname = $_POST['tname'];
-    // insertion query 
-    $sql = "UPDATE teams SET name='$tname' WHERE id='$id' ";
-    $data = mysqli_query($conn, $sql);
-    // $count = mysqli_num_rows($data);
-    if ($data) {
+    // Check if team name is not empty
+    if (!empty($tname)) {
+        // SQL query to update team name
+        $sql = "UPDATE teams SET name='$tname' WHERE id='$id'";
+        $data = mysqli_query($conn, $sql);
 
-        $msg = "team updated sucessfully";
-        // header("location: team.php");
+        if ($data) {
+            echo '<script>alert("team updated successfully."); 
+            window.location.replace("team.php");</script>';
+            exit();
+        } else {
+            $msg = "Failed to update user. Please try again.";
+        }
     } else {
-        $msg = "please enter valid details";
+        $msg = "Please fill in all fields.";
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -29,30 +34,30 @@ if (isset($_POST['edit'])) {
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Add user</title>
+    <title>Edit Team</title>
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <!-- Custom styles for this template-->
     <link href="css/sb-admin.css" rel="stylesheet">
 </head>
 
-<body class="bg-dark">
+<body class="bg-white">
     <div class="container">
-        <div class="card card-login mx-auto mt150">
+        <div class="card card-login mx-auto mt-5">
             <div class="card-header">EDIT TEAM</div>
             <div class="card-body">
-                <form id="registrationForm" method="post" action="" name="employeeForm">
+                <div style="color: red;"><?php echo $msg; ?></div>
+                <form id="registrationForm" method="post" action="" name="teamForm">
                     <div class="row mb-3">
                         <div class="col">
-                            <label for="tname" class="form-label"> Name</label>
+                            <label for="tname" class="form-label">Name</label>
                             <input type="text" class="form-control" id="tname" name="tname" required>
-                            <span class="error text-danger" id="fnameError"></span>
                         </div>
                     </div>
                     <div class="mb-3" align="center">
-                        <input type="submit" name="edit" id="edit" value="EDIT TEAMS" class="btn btn-primary">
+                        <input type="submit" name="edit" id="edit" value="EDIT TEAM" class="btn btn-primary">
                     </div>
-                    <?php echo $msg; ?>
+
                 </form>
             </div><br>
         </div>
@@ -60,7 +65,7 @@ if (isset($_POST['edit'])) {
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    </script>
 </body>
 
 </html>
+<?php include ('footer.php'); ?>

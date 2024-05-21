@@ -16,8 +16,32 @@ if (isset($_GET['type']) && $_GET['type'] != '') {
     }
     if ($type == 'delete') {
         $id = $_GET['id'];
-        $delete_sql = "delete from projects where id='$id'";
-        mysqli_query($conn, $delete_sql);
+
+        $role = $_SESSION['ROLE'];
+        // Check if the role is admin (assuming $role is defined elsewhere in your code)
+        if ($role == 1) {
+            $delete_sql = "DELETE FROM projects WHERE id = '$id'";
+            $message = "project hard deleted successfully!";
+
+            // Soft delete query to update the 'deleted' column
+
+        } else {
+
+            // Hard delete query to remove the task from the database
+            $delete_sql = "UPDATE projects SET deleted = 1 WHERE id = '$id'";
+            $message = "project soft deleted successfully!";
+        }
+
+        // Execute the delete query
+        if (mysqli_query($conn, $delete_sql)) {
+            $_SESSION['message'] = $message; // Set the message in session
+        } else {
+            $_SESSION['message'] = "Error deleting user: " . mysqli_error($conn);
+        }
+
+        header("Location: project.php"); // Redirect to the users page
+        exit();
+
     }
 }
 ?>
@@ -36,6 +60,12 @@ if (isset($_GET['type']) && $_GET['type'] != '') {
             <a href="add_projects.php" class="btn btn-dark">ADD PROJECT</a>
         </div>
         <div class="card-body">
+            <?php
+            if (isset($_SESSION['message'])) {
+                echo "<div class='alert alert-success'>" . $_SESSION['message'] . "</div>";
+                unset($_SESSION['message']); // Clear the message after displaying it
+            }
+            ?>
             <div class="table-responsive">
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
@@ -68,14 +98,15 @@ if (isset($_GET['type']) && $_GET['type'] != '') {
                                 <td>
                                     <?php
                                     if ($row['status'] == 1) {
-                                        echo "<span class='badge badge-complete' ><a href='?type=status&operation=deactive&id=" . $row['id'] . "'>Active</a></span>&nbsp;";
+                                        echo "<span class='badge badge-complete'><a href='?type=status&operation=deactive&id=" . $row['id'] . "'>Active</a></span>&nbsp;";
                                     } else {
                                         echo "<span class='badge badge-pending'><a href='?type=status&operation=active&id=" . $row['id'] . "'>Deactive</a></span>&nbsp;";
                                     }
-                                    echo "<span class='badge badge-edit'><a href='manage_project.php?id=" . $row['id'] . "'>Edit</a></span>&nbsp;";
-
-                                    echo "<span class='badge badge-delete'><a href='?type=delete&id=" . $row['id'] . "'>Delete</a></span>";
-
+                                    echo "<br>";
+                                    // Edit button
+                                    echo "<a href='manage_project.php?id=" . $row['id'] . "' class='btn btn-info' onclick='return confirmEdit()'>Edit</a>&nbsp;";
+                                    // Delete button
+                                    echo "<a href='?type=delete&id=" . $row['id'] . "' class='btn btn-danger' onclick='return confirmDelete()'>Delete</a>";
                                     ?>
                                 </td>
                             </tr>
@@ -89,4 +120,15 @@ if (isset($_GET['type']) && $_GET['type'] != '') {
     </div>
 </div>
 <!-- /.container-fluid -->
+<!-- JavaScript for confirmation prompts -->
+<script>
+    function confirmEdit() {
+        return confirm('Are you sure you want to edit this user?');
+    }
+
+    function confirmDelete() {
+        return confirm('Are you sure you want to delete this user? This action cannot be undone.');
+    }
+</script>
+
 <?php include ('footer.php'); ?>

@@ -1,16 +1,9 @@
 <?php
-include ('header.php');
-// if(isset($_SESSION['ROLE'])){
-// 	header('location:userHome.php');
-// 	die();
-// }
+
+if (isset($_SESSION['IS_LOGIN'])) {
+    header('location:dashboard.php');
+} else {
+    header('location:login.php');
+}
+
 ?>
-<div class="container-fluid">
-	<ol class="breadcrumb">
-		<li class="breadcrumb-item">
-			<a href="">Dashboard</a>
-		</li>
-	</ol>
-	<!-- Page Content -->
-</div>
-<?php include ('footer.php') ?>

@@ -1,5 +1,7 @@
 <?php
+include ('header.php');
 require ("db.php");
+
 $msg = "";
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
@@ -21,30 +23,38 @@ if ($id > 0) {
 
 // Handle form submission to update task data
 if (isset($_POST['update'])) {
-    // Fetch $_POST values
-    $pname = $_POST['pname'];
-    $description = $_POST['desc'];
-    $sdate = $_POST['sdate'];
-    $edate = $_POST['edate'];
-    $deadline = $_POST['ddate'];
-    $employee_id = $_POST['employee'];
-    $project_id = $_POST['project'];
+    // Validate and sanitize user input
+    $pname = mysqli_real_escape_string($conn, $_POST['pname']);
+    $description = mysqli_real_escape_string($conn, $_POST['desc']);
+    $sdate = mysqli_real_escape_string($conn, $_POST['sdate']);
+    $edate = mysqli_real_escape_string($conn, $_POST['edate']);
+    $deadline = mysqli_real_escape_string($conn, $_POST['ddate']);
+    $employee_id = mysqli_real_escape_string($conn, $_POST['employee']);
+    $project_id = mysqli_real_escape_string($conn, $_POST['project']);
 
-    // SQL query to update data in the tasks table
-    $sql = "UPDATE tasks SET 
-            name = '$pname', 
-            description = '$description', 
-            employee_id = '$employee_id', 
-            project_id = '$project_id', 
-            deadline = '$deadline', 
-            start_date = '$sdate', 
-            end_date = '$edate' 
-            WHERE id = $id";
+    // Check if all fields are filled
+    if (!empty($pname) && !empty($description) && !empty($sdate) && !empty($edate) && !empty($deadline) && !empty($employee_id) && !empty($project_id)) {
+        // SQL query to update data in the tasks table
+        $sql = "UPDATE tasks SET 
+                name = '$pname', 
+                description = '$description', 
+                employee_id = '$employee_id', 
+                project_id = '$project_id', 
+                deadline = '$deadline', 
+                start_date = '$sdate', 
+                end_date = '$edate' 
+                WHERE id = $id";
 
-    if (mysqli_query($conn, $sql)) {
-        $msg = "Task updated successfully";
+        if (mysqli_query($conn, $sql)) {
+            echo '<script>alert("task updated successfully."); 
+            window.location.replace("task.php");</script>';
+            exit();
+
+        } else {
+            $msg = "Please enter valid details: " . mysqli_error($conn);
+        }
     } else {
-        $msg = "Please enter valid details: " . mysqli_error($conn);
+        $msg = "Please fill in all fields.";
     }
 }
 ?>
@@ -68,7 +78,8 @@ if (isset($_POST['update'])) {
         <div class="card card-login mx-auto mt-5">
             <div class="card-header">Update Task</div>
             <div class="card-body">
-                <form id="registrationForm" method="post" action="">
+                <div style="color: red;"><?php echo $msg; ?></div>
+                <form id="registrationForm" method="post" name="projectForm" onsubmit="return validateForm()">
                     <div class="row mb-3">
                         <div class="col">
                             <label for="pname" class="form-label">Name</label>
@@ -77,8 +88,8 @@ if (isset($_POST['update'])) {
                         </div>
                         <div class="col">
                             <label for="desc" class="form-label">Description</label>
-                            <input type="text" class="form-control" id="desc" name="desc"
-                                value="<?php echo htmlspecialchars($task_data['description']); ?>" required>
+                            <textarea class="form-control" id="desc" name="desc"
+                                value="<?php echo htmlspecialchars($task_data['description']); ?>" required></textarea>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -95,7 +106,7 @@ if (isset($_POST['update'])) {
                                 if (mysqli_num_rows($data) > 0) {
                                     while ($row = mysqli_fetch_assoc($data)) {
                                         $selected = ($task_data['employee_id'] == $row['id']) ? 'selected' : '';
-                                        echo "<option value='" . $row['id'] . "' $selected>" . $row['name'] . "</option>";
+                                        echo "<option value='" . $row['id'] . "' $selected>" . $row['firstname'] . "</option>";
                                     }
                                 } else {
                                     echo "<option value=''>No employees found</option>";
@@ -142,7 +153,7 @@ if (isset($_POST['update'])) {
                     <div class="mb-3">
                         <input type="submit" name="update" id="regist" value="Update Task" class="btn btn-primary">
                     </div>
-                    <?php echo $msg; ?>
+                    <div style="color: red;"><?php echo $msg; ?></div>
                 </form>
             </div>
         </div>
@@ -150,6 +161,24 @@ if (isset($_POST['update'])) {
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function validateForm() {
+            const sdate = document.getElementById('sdate').value;
+            const edate = document.getElementById('edate').value;
+            const ddate = document.getElementById('ddate').value;
+
+            if (new Date(sdate) >= new Date(edate)) {
+                alert('Start date cannot be after end date or same.');
+                return false;
+            }
+            if (new Date(edate) > new Date(ddate) && new Date(ddate) > Date(sdate)) {
+                alert('End date cannot be after deadline.');
+                return false;
+            }
+            return true;
+        }
+    </script>
 </body>
 
 </html>
+<?php include ('footer.php'); ?>

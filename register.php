@@ -1,28 +1,31 @@
 <?php
-
 require ("db.php");
-$msg = "";
-if (isset($_POST['regist'])) {
 
-    //fetch $_post values 
+$error = '';
+
+if (isset($_POST['regist'])) {
     $fname = $_POST['fname'];
     $mname = $_POST['mname'];
     $lname = $_POST['lname'];
-    // $password = md5($_POST['password']);
-    $password = $_POST['password'];
     $email = $_POST['email'];
-    $sql = "INSERT INTO users ( firstname, middlename, lastname,pass, email) VALUES ('$fname',' $mname',' $lname','$password',' $email')";
-    $data = mysqli_query($conn, $sql);
-    // $count = mysqli_num_rows($data);
-    if ($data) {
+    $password = md5($_POST['password']);
 
-        $msg = "data inserted sucessfully";
-        header("location: login.php");
+    // Hash the password
+    // $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+    // Insert user data into the database
+    $sql = "INSERT INTO users (firstname, middlename, lastname, email, pass) VALUES ('$fname', '$mname', '$lname', '$email', '$password')";
+    $result = mysqli_query($conn, $sql);
+
+    if ($result) {
+        // Registration successful, redirect to login page
+        echo '<script>alert("Registration successful. You can now login."); 
+        window.location.replace("index.php");</script>';
+        exit();
     } else {
-        $msg = "please enter valid details";
+        $error = "Registration failed. Please try again.";
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -39,7 +42,7 @@ if (isset($_POST['regist'])) {
     <link href="css/sb-admin.css" rel="stylesheet">
 </head>
 
-<body class="bg-dark">
+<body class="bg-white">
     <div class="container">
         <div class="card card-login mx-auto mt150">
             <div class="card-header">Add User</div>
@@ -82,7 +85,7 @@ if (isset($_POST['regist'])) {
                         <input type="submit" name="regist" id="regist" value="Register" class="btn btn-primary">
                     </div>
                     <div class="mb-3" align="center">
-                        Already have an account? <a href="login.php">Login</a>
+                        Already have an account? <a href="index.php">Login</a>
                     </div>
                 </form>
             </div><br>

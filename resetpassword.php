@@ -1,19 +1,34 @@
 <?php
 require ("db.php");
-$msg = '';
 session_start();
+$msg = '';
+
 if (isset($_POST['cpassword'])) {
     $email = $_POST['email'];
-    $newpassword = $_POST['newpassword'];
-    // $password = md5($_POST['password']);
-    $query = "UPDATE users SET pass='$newpassword' WHERE email='$email'";
-    $res = mysqli_query($conn, $query);
-    if ($res) {
-        $msg = "password updated sucessfully";
+    $newpassword = md5($_POST['newpassword']);
+
+    // Check if email exists
+    $query = "SELECT email FROM users WHERE email='$email'";
+    $result = mysqli_query($conn, $query);
+
+    if (mysqli_num_rows($result) > 0) {
+        // Update the password
+        $updateQuery = "UPDATE users SET pass='$newpassword' WHERE email='$email'";
+        $res = mysqli_query($conn, $updateQuery);
+        if ($res) {
+            echo '<script>alert("Password reset successfully."); 
+                window.location.replace("index.php");</script>';
+            exit();
+        } else {
+            $msg = "Error updating password.";
+        }
     } else {
-        $msg = "email id not found";
+        $msg = "Email ID not found.";
     }
+} else {
+    $msg = "Invalid email format.";
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,39 +37,41 @@ if (isset($_POST['cpassword'])) {
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Admin - Login</title>
+    <title>Reset Password</title>
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <!-- Custom styles for this template-->
     <link href="css/sb-admin.css" rel="stylesheet">
-
 </head>
 
-<body class="bg-dark">
+<body class="bg-white">
     <div class="container">
-        <div class="card card-login mx-auto mt150">
+        <div class="card card-login mx-auto mt-5">
             <div class="card-header">Update Password</div>
             <div class="card-body">
-                <!-- reset password form -->
+
+                <div class="alert alert-danger">
+                    <?php echo $msg ?>
+                </div>
+
+                <!-- Reset password form -->
                 <form method="post" name="loginform">
                     <div class="form-group">
                         <div class="form-label-group">
-                            <input type="username" name="email" class="form-control" placeholder="Username"
+                            <input type="email" name="email" class="form-control" placeholder="Email"
                                 required="required" autofocus="autofocus">
-                            <label for="username">Username</label>
+                            <label for="email">Email</label>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="form-label-group">
-                            <input type="password" name="newpassword" class="form-control" placeholder="Password"
+                            <input type="password" name="newpassword" class="form-control" placeholder="New Password"
                                 required="required">
-                            <label for="inputPassword">New Password</label>
+                            <label for="newpassword">New Password</label>
                         </div>
                     </div>
-
                     <input type="submit" name="cpassword" value="Update Password" class="btn btn-primary btn-block">
                     <br>
-                    <?php echo $msg ?>
                 </form>
             </div>
         </div>

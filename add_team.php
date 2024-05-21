@@ -1,23 +1,30 @@
 <?php
-
+include ('header.php');
 require ("db.php");
 $msg = "";
+
 if (isset($_POST['add'])) {
 
-    //fetch $_post values 
-    $tname = $_POST['tname'];
-    // insertion query 
-    $sql = "INSERT INTO users ( name, ) VALUES ('$tname')";
-    $data = mysqli_query($conn, $sql);
-    // $count = mysqli_num_rows($data);
-    if ($data) {
+    // Fetch $_POST values
+    $tname = trim($_POST['tname']);
 
-        $msg = "team inserted sucessfully";
+    // Validate input
+    if (empty($tname)) {
+        $msg = "Please enter a valid team name.";
     } else {
-        $msg = "please enter valid details";
+        // Insertion query
+        $sql = "INSERT INTO teams (name) VALUES ('$tname')";
+        $data = mysqli_query($conn, $sql);
+
+        if ($data) {
+            echo '<script>alert("team inserted successfully."); 
+            window.location.replace("team.php");</script>';
+            exit();
+        } else {
+            $msg = "Error inserting team. Please try again.";
+        }
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -27,7 +34,7 @@ if (isset($_POST['add'])) {
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Add user</title>
+    <title>Add Team</title>
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <!-- Custom styles for this template-->
@@ -36,7 +43,10 @@ if (isset($_POST['add'])) {
 
 <body class="bg-white">
     <div class="container">
-        <div class="card card-login mx-auto mt150">
+        <div class="text-center text-danger">
+            <?php echo $msg; ?>
+        </div>
+        <div class="card card-login mx-auto mt-5">
             <div class="card-header">Add Team</div>
             <div class="card-body">
                 <form id="registrationForm" method="post" action="" name="employeeForm">
@@ -48,9 +58,9 @@ if (isset($_POST['add'])) {
                         </div>
                     </div>
                     <div class="mb-3" align="center">
-                        <input type="submit" name="add" id="regist" value="ADD TEAMS" class="btn btn-primary">
+                        <input type="submit" name="add" id="regist" value="ADD TEAM" class="btn btn-primary">
                     </div>
-                    <?php echo $msg; ?>
+
                 </form>
             </div><br>
         </div>
@@ -58,7 +68,7 @@ if (isset($_POST['add'])) {
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    </script>
 </body>
 
 </html>
+<?php include ('footer.php'); ?>

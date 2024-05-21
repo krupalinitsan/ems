@@ -1,9 +1,13 @@
 <?php
 session_start();
 if (!isset($_SESSION['IS_LOGIN'])) {
-    header('location:login.php');
+    header('location:/index.php');
     die();
 }
+// } elseif (isset($_SESSION['IS_LOGIN'])) {
+//     header('location:header.php');
+//     die();
+// }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,7 +37,7 @@ if (!isset($_SESSION['IS_LOGIN'])) {
                     <i class="fas fa-user-circle fa-fw"></i>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                    <?php if ($_SESSION['ROLE'] == 1) { ?>
+                    <?php if ($_SESSION['ROLE']) { ?>
                         <a class="dropdown-item" href="profile.php">My Profile</a>
                     <?php } ?>
                     <a class="dropdown-item" href="logout.php">Logout</a>
@@ -46,7 +50,7 @@ if (!isset($_SESSION['IS_LOGIN'])) {
         <ul class="sidebar navbar-nav">
             <?php if ($_SESSION['ROLE'] == 1) { ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="index.php">
+                    <a class="nav-link" href="dashboard.php">
                         <i class="fas fa-fw fa-tachometer-alt"></i>
                         <span>Dashboard</span>
                     </a>
@@ -100,10 +104,22 @@ if (!isset($_SESSION['IS_LOGIN'])) {
                 </li>
             <?php } elseif ($_SESSION['ROLE'] == 4) { ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="task.php">
+                    <a class="nav-link" href="mycalander.php">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="mytask.php">
                         <i class="fa fa-fw fa-newspaper"></i>
                         <span>Task</span></a>
                 </li>
+
+                <!-- <li class="nav-item">
+                    <a class="nav-link" href="mycalander.php">
+                        <i class="fa fa-fw fa-newspaper"></i>
+                        <span>Calander</span></a>
+                </li> -->
             <?php } ?>
         </ul>
         <div id="content-wrapper">
