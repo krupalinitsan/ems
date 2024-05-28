@@ -35,7 +35,6 @@ if (isset($_GET['type']) && $_GET['type'] != '') {
 
         header("Location: users.php"); // Redirect to the users page
         exit();
-
     }
 }
 ?>
@@ -52,6 +51,14 @@ if (isset($_GET['type']) && $_GET['type'] != '') {
         <div class="text-right px-4">
             <a href="add_user.php" class="btn btn-dark">ADD USERS</a>
         </div>
+
+        <!-- Search form -->
+        <form method="GET" action="users.php" class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" style="margin: 20px;" type="search" placeholder="Search"
+                aria-label="Search" name="search" value="<?php echo isset($_GET['search']) ? $_GET['search'] : ''; ?>">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+
         <div class="card-body">
             <?php
             if (isset($_SESSION['message'])) {
@@ -75,7 +82,21 @@ if (isset($_GET['type']) && $_GET['type'] != '') {
                     </thead>
                     <tbody>
                         <?php
-                        $query = "SELECT * FROM users";
+                        $limit = 5;
+                        $search = '';
+                        if (isset($_GET['search'])) {
+                            $search = $_GET['search'];
+                        }
+
+                        $page = isset($_GET['page']) ? $_GET['page'] : 1;
+                        $offset = ($page - 1) * $limit;
+
+                        $query = "SELECT * FROM users WHERE 
+                                  firstname LIKE '%$search%' OR
+                                  middlename LIKE '%$search%' OR
+                                  lastname LIKE '%$search%' OR
+                                  email LIKE '%$search%' 
+                                  ORDER BY id DESC LIMIT {$offset},{$limit}";
                         $stmt = $conn->prepare($query);
                         $stmt->execute();
                         $result = $stmt->get_result();
@@ -90,36 +111,27 @@ if (isset($_GET['type']) && $_GET['type'] != '') {
                                 <td><?php echo $row['email']; ?></td>
                                 <td><?php
                                 $role_id = $row['role'];
-                                $team_query = "SELECT name FROM roles WHERE id=?";
+                                $role_query = "SELECT name FROM roles WHERE id=?";
+                                $role_stmt = $conn->prepare($role_query);
+                                $role_stmt->bind_param("i", $role_id);
+                                $role_stmt->execute();
+                                $role_result = $role_stmt->get_result();
+                                $role_row = $role_result->fetch_assoc();
+
+                                echo is_null($role_row) ? "-" : $role_row['name'];
+                                ?>
+                                </td>
+                                <td><?php
+                                $team_id = $row['team_id'];
+                                $team_query = "SELECT name FROM teams WHERE id=?";
                                 $team_stmt = $conn->prepare($team_query);
-                                $team_stmt->bind_param("i", $role_id);
+                                $team_stmt->bind_param("i", $team_id);
                                 $team_stmt->execute();
                                 $team_result = $team_stmt->get_result();
                                 $team_row = $team_result->fetch_assoc();
 
-                                if (is_null($team_row)) {
-                                    echo "-";
-                                } else {
-                                    echo $team_row['name'];
-                                }
-                                ?></td>
-
-                                <td>
-                                    <?php
-                                    $team_id = $row['team_id'];
-                                    $team_query = "SELECT name FROM teams WHERE id=?";
-                                    $team_stmt = $conn->prepare($team_query);
-                                    $team_stmt->bind_param("i", $team_id);
-                                    $team_stmt->execute();
-                                    $team_result = $team_stmt->get_result();
-                                    $team_row = $team_result->fetch_assoc();
-
-                                    if (is_null($team_row)) {
-                                        echo "-";
-                                    } else {
-                                        echo $team_row['name'];
-                                    }
-                                    ?>
+                                echo is_null($team_row) ? "-" : $team_row['name'];
+                                ?>
                                 </td>
                                 <td>
                                     <?php
@@ -141,6 +153,31 @@ if (isset($_GET['type']) && $_GET['type'] != '') {
                         ?>
                     </tbody>
                 </table>
+                <?php
+                $sql = "SELECT * FROM users WHERE 
+                        firstname LIKE '%$search%' OR
+                        middlename LIKE '%$search%' OR
+                        lastname LIKE '%$search%' OR
+                        email LIKE '%$search%'";
+                $data = mysqli_query($conn, $sql);
+
+                if (mysqli_num_rows($data) > 0) {
+                    $total_record = mysqli_num_rows($data);
+                    $total_page = ceil($total_record / $limit);
+
+                    echo '<ul class="pagination justify-content-center">';
+                    if ($page > 1) {
+                        echo '<li class="page-item"><a class="page-link" href="users.php?page=' . ($page - 1) . '&search=' . $search . '">Prev</a></li>';
+                    }
+                    for ($i = 1; $i <= $total_page; $i++) {
+                        echo '<li class="page-item"><a class="page-link" href="users.php?page=' . $i . '&search=' . $search . '">' . $i . '</a></li>';
+                    }
+                    if ($total_page > $page) {
+                        echo '<li class="page-item"><a class="page-link" href="users.php?page=' . ($page + 1) . '&search=' . $search . '">Next</a></li>';
+                    }
+                    echo '</ul>';
+                }
+                ?>
             </div>
         </div>
     </div>
